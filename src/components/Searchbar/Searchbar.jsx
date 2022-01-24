@@ -24,7 +24,7 @@ class Searchbar extends Component {
     e.preventDefault();
 
     if (inputFormValue.trim() === '') {
-      toast.error('Fill in the field');
+      toast.error('Please, fill in the field of search');
       return;
     }
 

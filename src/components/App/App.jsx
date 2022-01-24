@@ -11,14 +11,19 @@ class App extends Component {
     searchValue: '',
     images: [],
     page: 1,
+    perPage: 12,
+    totalHits: 0,
+    endPage: 0,
   };
 
   addSearchValue = formData => {
-    this.setState({ searchValue: formData });
+    this.setState({
+      searchValue: formData,
+    });
   };
 
   componentDidUpdate(_, prevStates) {
-    const { searchValue, page } = this.state;
+    const { searchValue, page, perPage } = this.state;
     if (prevStates.searchValue !== searchValue) {
       return getImage(searchValue, page === 1).then(data => {
         if (data.hits.length === 0) {
@@ -29,6 +34,8 @@ class App extends Component {
         this.setState({
           images: [...data.hits],
           page: 1,
+          totalHits: data.totalHits,
+          endPage: perPage + 1,
         });
       });
     }
@@ -42,19 +49,21 @@ class App extends Component {
         return {
           images: [...prevState.images, ...data.hits],
           page: page + 1,
+          totalHits: data.totalHits,
+          endPage: data.totalHits - page * 12,
         };
       });
     });
   };
 
   render() {
-    const { images } = this.state;
+    const { images, endPage, perPage } = this.state;
     return (
       <Container>
         <Searchbar onSubmit={this.addSearchValue} />
         <Toaster position="top-right" />
-        <ImageGallery prop={this.state.images} />
-        {images.length > 0 && <Button buttonP={this.handleClick} />}
+        {images.length > 0 && <ImageGallery prop={this.state.images} />}
+        {endPage > perPage && <Button buttonP={this.handleClick} />}
       </Container>
     );
   }
