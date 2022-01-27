@@ -4,6 +4,8 @@ import { Toaster, toast } from 'react-hot-toast';
 import Searchbar from '../Searchbar';
 import ImageGallery from '../ImageGallery';
 import Button from '../Button';
+import Loader from '../Loader';
+import Modal from '../Modal';
 import { Container } from './App.styled';
 
 const KEY = '24382748-1dfb63c81149146d5ea200f75';
@@ -16,6 +18,9 @@ class App extends Component {
     page: 1,
     endPage: 0,
     perPage: 12,
+    isLoading: false,
+    error: null,
+    showModal: false,
   };
 
   addSearchValue = formData => {
@@ -23,12 +28,16 @@ class App extends Component {
       searchValue: formData,
       page: 1,
       images: [],
+      isLoading: false,
+      error: null,
     });
   };
 
   async componentDidUpdate(_, prevState) {
     const { searchValue, images, page, perPage, endPage } = this.state;
     if (prevState.searchValue !== searchValue || prevState.page !== page) {
+      this.setState({ isLoading: true });
+
       try {
         await axios
           .get(
@@ -41,9 +50,10 @@ class App extends Component {
             } = data;
 
             if (hits.length === 0) {
-              return toast.error(
-                'Sorry, there is no pictures. Try another request...',
+              toast.error(
+                'Sorry, there are no pictures. Try another request...',
               );
+              return this.setState({ images: [] });
             }
 
             this.setState(prevState => {
@@ -58,7 +68,10 @@ class App extends Component {
             }
           });
       } catch (error) {
-        toast.error('Whoops, something went wrong:', error);
+        this.setState({ error });
+        toast.error('Whoops, something went wrong: error. Try new request');
+      } finally {
+        this.setState({ isLoading: false });
       }
     }
   }
@@ -71,19 +84,37 @@ class App extends Component {
     });
   };
 
+  toggleModal = (largeImg, tags) => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+      largeImg,
+      tags,
+    }));
+  };
+
   render() {
-    const { images, endPage, perPage } = this.state;
+    const { images, endPage, perPage, isLoading, showModal, largeImg, tags } =
+      this.state;
+    const shouldRenderLoreMoreButton =
+      endPage > perPage / 2 && images.length > 0;
+
     return (
       <Container>
         <Toaster position="top-right" />
         <Searchbar onSubmit={this.addSearchValue} />
-        {images.length > 0 && <ImageGallery prop={this.state.images} />}
-        {endPage > perPage / 2 && <Button buttonP={this.handleClick} />}
+        {images.length > 0 && (
+          <ImageGallery propGallery={images} onClick={this.toggleModal} />
+        )}
+        {isLoading && <Loader />}
+        {shouldRenderLoreMoreButton && <Button buttonP={this.handleClick} />}
+        {showModal && (
+          <Modal onClose={this.toggleModal}>
+            <img src={largeImg} alt={tags} />
+          </Modal>
+        )}
       </Container>
     );
   }
 }
 
 export default App;
-
-// npm install spinners-react

@@ -3,10 +3,16 @@ import ImageGalleryItem from '../ImageGalleryItem';
 import PropTypes from 'prop-types';
 import { BoxUl } from './ImageGallery.styled';
 
-const ImageGallery = ({ prop }) => (
+const ImageGallery = ({ propGallery, onClick }) => (
   <BoxUl>
-    {prop.map(({ webformatURL, tags }, index) => (
-      <ImageGalleryItem key={index} webformatURL={webformatURL} tags={tags} />
+    {propGallery.map(({ webformatURL, tags, largeImageURL }, index) => (
+      <ImageGalleryItem
+        key={index}
+        webformatURL={webformatURL}
+        tags={tags}
+        largeImageURL={largeImageURL}
+        onClick={onClick}
+      />
     ))}
   </BoxUl>
 );
@@ -14,5 +20,6 @@ const ImageGallery = ({ prop }) => (
 export default ImageGallery;
 
 ImageGallery.propTypes = {
-  prop: PropTypes.arrayOf(PropTypes.shape).isRequired,
+  propGallery: PropTypes.arrayOf(PropTypes.shape).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
